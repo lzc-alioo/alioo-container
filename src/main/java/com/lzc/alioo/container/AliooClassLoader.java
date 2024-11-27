@@ -19,7 +19,7 @@ public class AliooClassLoader extends URLClassLoader {
     private Map<String, Class> cache;
 
     private AliooClassLoader(URL[] urls, ClassLoader parent) {
-        super(urls, parent);
+        super("alioo-container-classloader", urls, parent);
         this.cache = new HashMap<>();
 
     }

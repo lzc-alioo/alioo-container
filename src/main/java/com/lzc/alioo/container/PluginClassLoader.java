@@ -18,7 +18,7 @@ import java.util.zip.ZipInputStream;
 public class PluginClassLoader extends URLClassLoader {
 
     private PluginClassLoader(String module, URL[] urlPath) {
-        super(module, urlPath, ClassLoader.getSystemClassLoader().getParent());
+        super(module, urlPath, ClassLoader.getSystemClassLoader());
 
         PluginSharableClassLoader.register(this);
     }
