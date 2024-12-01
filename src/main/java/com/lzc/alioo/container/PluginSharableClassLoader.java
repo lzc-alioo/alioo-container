@@ -41,7 +41,8 @@ public class PluginSharableClassLoader extends URLClassLoader {
                 if (sharableClassLoader.contains(module)) {
                     continue;
                 }
-                PluginClassLoader.init(module, pluginFiles[i]);
+                PluginClassLoader pluginClassLoader=  PluginClassLoader.init(module, pluginFiles[i]);
+                register(pluginClassLoader);
             }
         }
 

@@ -55,7 +55,7 @@ public class AliooClassLoader extends URLClassLoader {
 
         //项目classpath中查找
         if ((clazz = super.loadClass(name)) != null) {
-            log.info("Loaded By " + this + " name: " + name);
+            log.info("Loaded By " + getParent() + " name: " + name);
             cache.put(name, clazz);
             return clazz;
         }
