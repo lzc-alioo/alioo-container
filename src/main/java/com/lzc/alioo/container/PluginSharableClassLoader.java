@@ -12,12 +12,12 @@ public class PluginSharableClassLoader extends URLClassLoader {
     private static final Map<String, PluginClassLoader> classNamePluginCache = new HashMap<>();
 
 
-    public static PluginSharableClassLoader init() {
+    public static PluginSharableClassLoader init(AliooClassLoader aliooClassLoader) {
         //插件集合类加载器
         PluginSharableClassLoader sharableClassLoader = new PluginSharableClassLoader();
 
         // 加载插件类加载器
-        initPluginClassLoader(sharableClassLoader);
+        sharableClassLoader.initPluginClassLoader(aliooClassLoader);
 
         return sharableClassLoader;
     }
@@ -27,7 +27,7 @@ public class PluginSharableClassLoader extends URLClassLoader {
     }
 
 
-    public static void initPluginClassLoader(PluginSharableClassLoader sharableClassLoader) {
+    public void initPluginClassLoader(AliooClassLoader aliooClassLoader) {
         String pluginPath = System.getProperty("alioo.plugin.path", System.getProperty("user.home") + File.separator + "alioo-plugin/");
 
         File[] pluginFiles = new File(pluginPath).listFiles();
@@ -37,18 +37,18 @@ public class PluginSharableClassLoader extends URLClassLoader {
         }
         for (int i = 0; i < pluginFiles.length; i++) {
             if (pluginFiles[i].getName().endsWith(".jar")) {
-                String module = pluginFiles[i].getName().replace(".jar", "");
-                if (sharableClassLoader.contains(module)) {
+                String pluginName = pluginFiles[i].getName().replace(".jar", "");
+                if (this.contains(pluginName)) {
                     continue;
                 }
-                PluginClassLoader pluginClassLoader=  PluginClassLoader.init(module, pluginFiles[i]);
+                PluginClassLoader pluginClassLoader = PluginClassLoader.init(pluginName, pluginFiles[i], aliooClassLoader);
                 register(pluginClassLoader);
             }
         }
 
     }
 
-    public static void register(PluginClassLoader pluginClassLoader) {
+    public void register(PluginClassLoader pluginClassLoader) {
         pluginNameMap.put(pluginClassLoader.getName(), pluginClassLoader);
         //pluginClassLoader提取出所有url中jar中class文件
         pluginClassLoader.getExportedClass().stream().forEach(className -> classNamePluginCache.put(className, pluginClassLoader));

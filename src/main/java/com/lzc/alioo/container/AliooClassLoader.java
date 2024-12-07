@@ -12,7 +12,7 @@ public class AliooClassLoader extends URLClassLoader {
 
     private static AliooClassLoader instance;
 
-    private static PluginSharableClassLoader sharableClassLoader;
+    private PluginSharableClassLoader sharableClassLoader;
 
     private static boolean inited;
 
@@ -24,19 +24,33 @@ public class AliooClassLoader extends URLClassLoader {
 
     }
 
-
-    public static AliooClassLoader init(ClassLoader classLoader, PluginSharableClassLoader pluginSharableClassLoader) {
+    public static AliooClassLoader init(ClassLoader classLoader) {
         if (inited) {
             return instance;
         }
 
         URL[] urls = ClassLoaderUtils.getUrls(classLoader);
         instance = new AliooClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
-        sharableClassLoader = pluginSharableClassLoader;
         inited = true;
         return instance;
-
     }
+
+    public void setSharableClassLoader(PluginSharableClassLoader sharableClassLoader) {
+        this.sharableClassLoader = sharableClassLoader;
+    }
+
+//    public static AliooClassLoader init(ClassLoader classLoader, PluginSharableClassLoader pluginSharableClassLoader) {
+//        if (inited) {
+//            return instance;
+//        }
+//
+//        URL[] urls = ClassLoaderUtils.getUrls(classLoader);
+//        instance = new AliooClassLoader(urls, ClassLoader.getSystemClassLoader().getParent());
+//        sharableClassLoader = pluginSharableClassLoader;
+//        inited = true;
+//        return instance;
+//
+//    }
 
     @Override
     public Class<?> loadClass(String name) throws ClassNotFoundException {
@@ -55,7 +69,7 @@ public class AliooClassLoader extends URLClassLoader {
 
         //项目classpath中查找
         if ((clazz = super.loadClass(name)) != null) {
-            log.info("Loaded By " + getParent() + " name: " + name);
+            log.info("Loaded By " + (clazz.getClassLoader() != null ? clazz.getClassLoader().getName() : "system-classloader") + " name: " + name);
             cache.put(name, clazz);
             return clazz;
         }

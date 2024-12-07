@@ -11,11 +11,15 @@ public class AliooApplication {
             if (inited) {
                 return;
             }
-            //插件集合类加载器
-            PluginSharableClassLoader sharableClassLoader = PluginSharableClassLoader.init();
-
             //加载业务类加载器
-            AliooClassLoader aliooClassLoader = AliooClassLoader.init(AliooApplication.class.getClassLoader(), sharableClassLoader);
+            AliooClassLoader aliooClassLoader = AliooClassLoader.init(AliooApplication.class.getClassLoader());
+
+            //插件集合类加载器
+            PluginSharableClassLoader sharableClassLoader = PluginSharableClassLoader.init(aliooClassLoader);
+
+            aliooClassLoader.setSharableClassLoader(sharableClassLoader);
+
+//            AliooClassLoader aliooClassLoader = AliooClassLoader.init(AliooApplication.class.getClassLoader(), sharableClassLoader);
 
 
             reLaunch(aliooClassLoader);

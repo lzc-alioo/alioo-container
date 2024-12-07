@@ -17,15 +17,27 @@ import java.util.zip.ZipInputStream;
 
 @Slf4j
 public class PluginClassLoader extends URLClassLoader {
+    private AliooClassLoader aliooClassLoader;
     private String pluginDir = null;
+    private List<String> importList = new ArrayList<>();
 
-    private PluginClassLoader(String module, String pluginDir, URL[] urlPath) {
-        super(module, urlPath, ClassLoader.getSystemClassLoader());
+    private PluginClassLoader(String pluginName, String pluginDir, URL[] urlPath, AliooClassLoader aliooClassLoader) {
+        super(pluginName, urlPath, ClassLoader.getSystemClassLoader());
+        this.aliooClassLoader = aliooClassLoader;
         this.pluginDir = pluginDir;
+        //读取META-INF/import.index 到importList
+        Path importPath = Path.of(pluginDir, "META-INF/import.index");
+        if (Files.exists(importPath)) {
+            try {
+                importList = Files.readAllLines(importPath);
+            } catch (IOException e) {
+                log.error("read import.index from " + pluginDir + " error", e);
+            }
+        }
 
     }
 
-    public static PluginClassLoader init(String module, File pluginFile) {
+    public static PluginClassLoader init(String pluginName, File pluginFile, AliooClassLoader aliooClassLoader) {
         URL[] urlPath = new URL[0];
         String pluginDir = null;
         try {
@@ -34,7 +46,7 @@ public class PluginClassLoader extends URLClassLoader {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        PluginClassLoader instance = new PluginClassLoader(module, pluginDir, urlPath);
+        PluginClassLoader instance = new PluginClassLoader(pluginName, pluginDir, urlPath, aliooClassLoader);
         System.out.println("found alioo plugin by pluginPath:" + pluginFile.getAbsolutePath());
         return instance;
     }
@@ -43,6 +55,15 @@ public class PluginClassLoader extends URLClassLoader {
     public Class<?> loadClass(String name) throws ClassNotFoundException {
         Class clazz = null;
         //对于import的类优先使用lzcClassLoader进行统一加载
+        String packagePath = name.substring(0, name.lastIndexOf('.'));
+        if (importList.contains(packagePath) || importList.contains(name)) {
+            clazz = aliooClassLoader.loadClass(name);
+            if (clazz != null) {
+                return clazz;
+            } else {
+                throw new ClassNotFoundException(name + " not in " + aliooClassLoader.getName());
+            }
+        }
 
         clazz = loadClassData(name);
         if (clazz != null) {
