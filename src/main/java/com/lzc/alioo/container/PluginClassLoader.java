@@ -17,22 +17,24 @@ import java.util.zip.ZipInputStream;
 
 @Slf4j
 public class PluginClassLoader extends URLClassLoader {
-    private static String pluginDir = null;
+    private String pluginDir = null;
 
-    private PluginClassLoader(String module, URL[] urlPath) {
+    private PluginClassLoader(String module, String pluginDir, URL[] urlPath) {
         super(module, urlPath, ClassLoader.getSystemClassLoader());
+        this.pluginDir = pluginDir;
 
     }
 
     public static PluginClassLoader init(String module, File pluginFile) {
         URL[] urlPath = new URL[0];
+        String pluginDir = null;
         try {
             pluginDir = JarExtractor.extractJar(pluginFile.getAbsolutePath());
             urlPath = new URL[]{pluginFile.toURI().toURL()};
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        PluginClassLoader instance = new PluginClassLoader(module, urlPath);
+        PluginClassLoader instance = new PluginClassLoader(module, pluginDir, urlPath);
         System.out.println("found alioo plugin by pluginPath:" + pluginFile.getAbsolutePath());
         return instance;
     }
